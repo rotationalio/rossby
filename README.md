@@ -1,5 +1,10 @@
 # Rossby
 
+[![Build Status](https://travis-ci.com/kansaslabs/rossby.svg?branch=master)](https://travis-ci.com/kansaslabs/rossby)
+[![codecov](https://codecov.io/gh/kansaslabs/rossby/branch/master/graph/badge.svg)](https://codecov.io/gh/kansaslabs/rossby)
+[![GoDoc](https://godoc.org/github.com/kansaslabs/rossby?status.svg)](https://godoc.org/github.com/kansaslabs/rossby)
+[![Go Report Card](https://goreportcard.com/badge/github.com/kansaslabs/rossby)](https://goreportcard.com/report/github.com/kansaslabs/rossby)
+
 Rossby implements a distributed, encrypted message service that is intended to
 be geo-replicated. Rossby's goal is to facilitate the sending and receiving of messages
 while also ensuring that as much work as possible is pushed to the client side.

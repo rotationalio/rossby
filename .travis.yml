@@ -1,0 +1,35 @@
+language: go
+sudo: false
+dist: bionic
+osx_image: xcode10
+
+go:
+  - "1.12"
+  - "1.13"
+
+os:
+  - linux
+  - osx
+
+# Force-enable Go modules (only required for Go 1.12 or lower)
+env:
+  - GO111MODULE=on
+
+# Skip install step, e.g. don't `go get` dependencies
+install: true
+
+script:
+  - go build ./...
+  - go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+notifications:
+  email:
+    recipients:
+      - benjamin@bengfort.com
+      - bilbro@gmail.com
+      - schmier@gmail.com
+    on_success: change
+    on_failure: always

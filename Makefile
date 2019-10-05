@@ -41,9 +41,6 @@ deps:
 test:
 	@ $(GOTEST) ./...
 
-# Target for testing in continuous integration
-citest:
-	$(GOTEST) -v -bench ./...
 
 # Run Godoc server and open browser to the documentation
 doc:
