@@ -1,7 +1,7 @@
 # Rossby
 
-[![Build Status](https://travis-ci.com/kansaslabs/rossby.svg?branch=master)](https://travis-ci.com/kansaslabs/rossby)
-[![codecov](https://codecov.io/gh/kansaslabs/rossby/branch/master/graph/badge.svg)](https://codecov.io/gh/kansaslabs/rossby)
+[![Build Status](https://travis-ci.com/kansaslabs/rossby.svg?branch=develop)](https://travis-ci.com/kansaslabs/rossby)
+[![codecov](https://codecov.io/gh/kansaslabs/rossby/branch/develop/graph/badge.svg)](https://codecov.io/gh/kansaslabs/rossby)
 [![GoDoc](https://godoc.org/github.com/kansaslabs/rossby?status.svg)](https://godoc.org/github.com/kansaslabs/rossby)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kansaslabs/rossby)](https://goreportcard.com/report/github.com/kansaslabs/rossby)
 
