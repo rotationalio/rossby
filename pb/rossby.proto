@@ -2,6 +2,7 @@ syntax = "proto3";
 package pb;
 
 import "errors.proto";
+import "messages.proto";
 import "contacts.proto";
 
 // The Rossby service implements a gRPC API for sending encrypted messages.
@@ -13,20 +14,25 @@ service Rossby {
     rpc Contact (ContactRequest) returns (ContactReply) {}
     rpc Fetch (FetchRequest) returns (Messages) {}
     rpc Deliver (Messages) returns (DeliverResponse) {}
+
+    // TODO: is this a single bidirectional stream or two unidirectional streams?
     rpc Chat (stream Messages) returns (stream Messages) {}
 }
 
 // Messages are the primary serialization format for sending multiple message objects
 // between Rossby replicas and to and from clients. They are simply a wrapper for one
 // or more messages and status meta information.
-message Messages {}
+message Messages {
+    Status status = 1;              // status meta information concerning the packet
+    repeated Message messages = 2;  // encrypted messages sent between machines
+}
 
 // Registration: a unary RPC to add a device, add a contact email or phone number, link
 // a device to an account, or change the public key of an account. Followed by authorization.
 message RegisterRequest {
     string device = 1;              // a unique identifier for the device such as IMEI, ESN, GUID
     repeated Contact contacts = 2;  // the phone numbers and email addresses associated with device
-    string pubkey = 3;              // the public key of the key/pair for encrypting messages
+    bytes pubkey = 3;               // the public key of the key/pair for encrypting messages
 }
 
 message RegisterReply {
@@ -56,8 +62,7 @@ message AuthorizeReply {
 // the server has to manage whether or not users are allowed to be discovered
 // automatically or not.
 message ContactRequest {
-    string auth = 1;                // the Hawk authorization (should this be in the header?)
-    repeated Contact contacts = 2;  // the contact identifiers to request public keys for
+    repeated Contact contacts = 2;  // the contact identifiers to request public key for
 }
 
 // TODO: also respond with contact profile
@@ -71,7 +76,6 @@ message ContactReply {
 // to the device. This RPC is used in a periodic fashion, whereas the Chat streaming RPC
 // is used to deliver messages to users who are currently online.
 message FetchRequest {
-    string auth = 1;                // the Hawk authorization (should this be in the header?)
     string device = 2;              // a unique identifier for the device such as IMEI, ESN, GUID
     string inbox = 3;               // the unique box identifier if known by the client
 }
