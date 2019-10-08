@@ -19,14 +19,6 @@ service Rossby {
     rpc Chat (stream Messages) returns (stream Messages) {}
 }
 
-// Messages are the primary serialization format for sending multiple message objects
-// between Rossby replicas and to and from clients. They are simply a wrapper for one
-// or more messages and status meta information.
-message Messages {
-    Status status = 1;              // status meta information concerning the packet
-    repeated Message messages = 2;  // encrypted messages sent between machines
-}
-
 // Registration: a unary RPC to add a device, add a contact email or phone number, link
 // a device to an account, or change the public key of an account. Followed by authorization.
 message RegisterRequest {
