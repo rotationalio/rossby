@@ -15,6 +15,8 @@ func TestContactValidate(t *testing.T) {
 		{"+14155552671", true},
 		{"+442071838750", true},
 		{"+551155256325", true},
+		{"+1", false},
+		{"+55115525632532335", false},
 		{"foo", false},
 	}
 
