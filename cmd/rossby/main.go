@@ -35,7 +35,7 @@ func main() {
 //===========================================================================
 
 func serve(c *cli.Context) (err error) {
-	var server *rossby.Server
+	var server *rossby.Replica
 	if server, err = rossby.New(nil); err != nil {
 		return cli.NewExitError(err, 1)
 	}

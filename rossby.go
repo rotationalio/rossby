@@ -17,6 +17,8 @@ import (
 
 	"github.com/bbengfort/x/noplog"
 	"github.com/dgraph-io/badger"
+	pb "github.com/kansaslabs/rossby/pb"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 )
 
@@ -34,10 +36,10 @@ func init() {
 	grpclog.SetLogger(noplog.New())
 }
 
-// New creates a Rossby server with the specified config or loads the config from the
-// environment if no configuration is passed. The server is initialized and validated
+// New creates a Rossby replica with the specified config or loads the config from the
+// environment if no configuration is passed. The replica is initialized and validated
 // once created but is not running.
-func New(options *Config) (r *Server, err error) {
+func New(options *Config) (r *Replica, err error) {
 	// Load config from environment if not specified by user.
 	if options == nil {
 		options = new(Config)
@@ -49,30 +51,40 @@ func New(options *Config) (r *Server, err error) {
 	// Set the logging level from the configuration
 	SetLogLevel(uint8(options.LogLevel))
 
-	// Create and initialize the server
-	r = &Server{config: options}
+	// Create and initialize the replica
+	r = &Replica{config: options}
 	if r.db, err = badger.Open((options.DatabaseOptions())); err != nil {
 		return nil, err
 	}
 	return r, nil
 }
 
-// Server objects contain the state to run a single rossby server instance that handles
-// messages from clients and manages a local database instance.
-type Server struct {
+// Replica objects contain the state to run a single rossby replica instance which
+// manages a local database instance and handles messages from clients and peers to
+// distribute messages across the network. There is always one replica object per
+// Rossby process.
+type Replica struct {
 	config *Config
 	db     *badger.DB
 }
 
 // Listen for messages from clients and respond to them.
-func (s *Server) Listen() error {
+func (r *Replica) Listen() error {
 	// Open TCP socket to listen for messages
-	sock, err := net.Listen("tcp", s.config.Address)
+	sock, err := net.Listen("tcp", r.config.Address)
 	if err != nil {
-		return fmt.Errorf("could not listen on %s: %s", s.config.Address, err)
+		return fmt.Errorf("could not listen on %s: %s", r.config.Address, err)
 	}
 	defer sock.Close()
-	status("listening for requests on %s", s.config.Address)
+	status("listening for requests on %s", r.config.Address)
+
+	// Initialize and run the gRPC server
+	srv := grpc.NewServer()
+	pb.RegisterRossbyServer(srv, r)
+
+	if err := srv.Serve(sock); err != nil {
+		return err
+	}
 
 	return nil
 }
