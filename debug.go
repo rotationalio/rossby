@@ -139,3 +139,33 @@ func debug(msg string, a ...interface{}) {
 func trace(msg string, a ...interface{}) {
 	print(LogTrace, msg, a...)
 }
+
+//===========================================================================
+// Database Logger
+//===========================================================================
+
+// DBLogger implements badger.Logger to ensure database log messages get appropriately
+// logged at the level specified by Rossby.
+//
+// TODO: Generalize this structure and the rest of this package into a kansaslabs log package
+type DBLogger struct{}
+
+// Errorf writes a log message to warn
+func (l *DBLogger) Errorf(msg string, a ...interface{}) {
+	warn(msg, a...)
+}
+
+// Warningf writes a log message to caution
+func (l *DBLogger) Warningf(msg string, a ...interface{}) {
+	caution(msg, a...)
+}
+
+// Infof writes a message to info
+func (l *DBLogger) Infof(msg string, a ...interface{}) {
+	info(msg, a...)
+}
+
+// Debugf writes a message to trace
+func (l *DBLogger) Debugf(msg string, a ...interface{}) {
+	trace(msg, a...)
+}

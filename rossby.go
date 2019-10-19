@@ -72,7 +72,7 @@ func (s *Server) Listen() error {
 		return fmt.Errorf("could not listen on %s: %s", s.config.Address, err)
 	}
 	defer sock.Close()
-	info("listening for requests on %s", s.config.Address)
+	status("listening for requests on %s", s.config.Address)
 
 	return nil
 }

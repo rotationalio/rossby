@@ -26,6 +26,8 @@ func (c *Config) Load() (err error) {
 }
 
 // DatabaseOptions returns the badger configuration to open and access the database.
-func (c *Config) DatabaseOptions() badger.Options {
-	return badger.DefaultOptions(c.Database)
+func (c *Config) DatabaseOptions() (opts badger.Options) {
+	opts = badger.DefaultOptions(c.Database)
+	opts = opts.WithLogger(&DBLogger{})
+	return opts
 }
