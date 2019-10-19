@@ -1,0 +1,14 @@
+syntax = "proto3";
+package pb;
+
+// Specifies how to parse contacts
+enum ContactType {
+    PHONE = 0;   // default contact type is a phone number (must contain country code)
+    EMAIL = 1;   // contact/connect via email address
+}
+
+// Contains the raw contact information along with parsing hints
+message Contact {
+    ContactType type = 1;  // determines how to parse the type of contact
+    string contact = 2;    // the string representation of the contact info
+}

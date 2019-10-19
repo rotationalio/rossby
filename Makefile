@@ -3,24 +3,24 @@ SHELL := /bin/bash
 
 # Build Environment
 PACKAGE = rossby
+PBPKG = $(CURDIR)/pb
 BUILD = $(CURDIR)/_build
 
 # Commands
 GOCMD = go
-GODEP = dep ensure
 GODOC = godoc
 GORUN = $(GOCMD) run
 GOGET = $(GOCMD) get
 GOBUILD = $(GOCMD) build
 GOCLEAN = $(GOCMD) clean
 GOTEST = $(GOCMD) test
-
+PROTOC = protoc
 
 # Export targets not associated with files.
-.PHONY: all install build raft deps test citest clean doc protobuf
+.PHONY: all install build raft test citest clean doc protobuf
 
 # Ensure dependencies are installed, run tests and compile
-all: deps test build
+all: protobuf build test
 
 # Install the commands and create configurations and data directories
 install: build
@@ -33,14 +33,9 @@ build: rossby
 rossby:
 	@ $(GOBUILD) -o $(BUILD)/rossby ./cmd/rossby
 
-# Use dep to collect dependencies.
-deps:
-	@ $(GODEP)
-
 # Target for simple testing on the command line
 test:
 	@ $(GOTEST) ./...
-
 
 # Run Godoc server and open browser to the documentation
 doc:
@@ -54,3 +49,8 @@ clean:
 	@ $(GOCLEAN)
 	@ find . -name "*.coverprofile" -print0 | xargs -0 rm -rf
 	@ rm -rf $(BUILD)
+
+# Compile protocol buffers
+protobuf:
+	$(info compiling protocol buffers …)
+	@ $(PROTOC) -I $(PBPKG) $(PBPKG)/*.proto --go_out=plugins=grpc:$(PBPKG)

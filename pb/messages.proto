@@ -1,0 +1,23 @@
+syntax = "proto3";
+package pb;
+
+import "google/protobuf/timestamp.proto";
+
+// Status messages send generic meta information about the state of the inbox.
+message Status {}
+
+// Message objects represent a single, encrypted message sent from one inbox to another.
+message Message {
+    string from = 1;                           // the inbox id of the sender
+    string to = 2;                             // the inbox id of the recipient
+    google.protobuf.Timestamp timestamp = 3;   // the time the message was sent
+    bytes body = 4;                            // the encrypted message body
+}
+
+// Messages are the primary serialization format for sending multiple message objects
+// between Rossby replicas and to and from clients. They are simply a wrapper for one
+// or more messages and status meta information.
+message Messages {
+    Status status = 1;              // status meta information concerning the packet
+    repeated Message messages = 2;  // encrypted messages sent between machines
+}

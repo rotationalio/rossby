@@ -1,0 +1,16 @@
+syntax = "proto3";
+package pb;
+
+// Errors are coded in Rossby to easily identify what has gone wrong
+// TODO: create error code enumerations for quick testing of error types
+message Error {
+    uint32 code = 1;                // the unique error code specific to Rossby
+    string message = 2;             // the error message to display to clients
+}
+
+// Multi-errors store more than one error but can be treated like a regular error
+// Normally we'd implement this as a type []*Error but this format allows it to be
+// easily serialized in RPC requests and responses.
+message MultiError {
+    repeated Error errors = 1;      // the errors in the multi-error
+}

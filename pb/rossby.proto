@@ -1,0 +1,81 @@
+syntax = "proto3";
+package pb;
+
+import "errors.proto";
+import "messages.proto";
+import "contacts.proto";
+
+// The Rossby service implements a gRPC API for sending encrypted messages.
+// The messages in this file describe the client-server interactions, not necessarily
+// the datastructures that are serialized in the backend or for replication.
+service Rossby {
+    rpc Register (RegisterRequest) returns (RegisterReply) {}
+    rpc Authorize (AuthorizeRequest) returns (AuthorizeReply) {}
+    rpc Contact (ContactRequest) returns (ContactReply) {}
+    rpc Fetch (FetchRequest) returns (Messages) {}
+    rpc Deliver (Messages) returns (DeliverResponse) {}
+
+    // TODO: is this a single bidirectional stream or two unidirectional streams?
+    rpc Chat (stream Messages) returns (stream Messages) {}
+}
+
+// Registration: a unary RPC to add a device, add a contact email or phone number, link
+// a device to an account, or change the public key of an account. Followed by authorization.
+message RegisterRequest {
+    string device = 1;              // a unique identifier for the device such as IMEI, ESN, GUID
+    repeated Contact contacts = 2;  // the phone numbers and email addresses associated with device
+    bytes pubkey = 3;               // the public key of the key/pair for encrypting messages
+}
+
+message RegisterReply {
+    bool success = 1;               // if the registration has succeeded or failed
+    uint32 authorizations = 2;      // number of authorization messages sent out
+    MultiError errors = 3;          // any errors that may have ocurred during registration
+}
+
+// Authorization: a unary RPC that is a response to a side channel. On registration,
+// Rossby sends an authorization code to the phone or email address associated with the
+// account. The user sends this code back in the authorization RPC and gets a unique
+// token that they can use to authenticate messages to the server with.
+message AuthorizeRequest {
+    string device = 1;              // a unique identifier for the device such as IMEI, ESN, GUID
+    string authorization = 2;       // the authorization key that was sent by the server
+}
+
+message AuthorizeReply {
+    bool success = 1;               // if the registration has succeeded or failed
+    string token = 2;               // the unique token or API key associated with the device
+    string inbox = 3;               // the unique box identifier associated with the device
+    MultiError errors = 4;          // any errors that may have ocurred during authorization
+}
+
+// Add Contacts: this RPC is designed to fetch the public key of another user when the
+// client supplies an authorized phone number or email. This can be a bit tricky, and
+// the server has to manage whether or not users are allowed to be discovered
+// automatically or not.
+message ContactRequest {
+    repeated Contact contacts = 2;  // the contact identifiers to request public key for
+}
+
+// TODO: also respond with contact profile
+message ContactReply {
+    bool success = 1;               // if the registration has succeeded or failed
+    string pubkey = 2;              // the public key of the key/pair for encrypting messages
+    MultiError errors = 3;          // any errors that may have ocurred during contacts
+}
+
+// Fetch Messages: this RPC is a one-off request to fetch all the messages corresponding
+// to the device. This RPC is used in a periodic fashion, whereas the Chat streaming RPC
+// is used to deliver messages to users who are currently online.
+message FetchRequest {
+    string device = 2;              // a unique identifier for the device such as IMEI, ESN, GUID
+    string inbox = 3;               // the unique box identifier if known by the client
+}
+
+// Deliver Messages: this RPC is a one-off request to deliver a set of messages. This RPC
+// is used in an asynchronous fashion when a Chat streaming RPC pipe does not exist.
+message DeliverResponse {
+    bool success = 1;               // if the registration has succeeded or failed
+    uint32 deliveries = 2;          // number of messages successfully delivered
+    MultiError errors = 3;          // any errors that may have ocurred during delivery
+}
