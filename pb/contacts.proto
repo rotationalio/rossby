@@ -11,4 +11,5 @@ enum ContactType {
 message Contact {
     ContactType type = 1;  // determines how to parse the type of contact
     string contact = 2;    // the string representation of the contact info
+    bool verified = 3;     // if the contact has been verified via the authorize workflow
 }
