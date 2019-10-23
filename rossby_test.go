@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	. "github.com/kansaslabs/rossby"
@@ -12,7 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var testDir string
+var (
+	testDir string
+	replica *Replica
+	mu      sync.Mutex
+)
 
 // TestMain runs the main goroutine and can run setup and teardown functions. In this
 // case we configure the environment and the database for all tests.
@@ -38,7 +43,24 @@ func TestMain(m *testing.M) {
 // Test Helpers
 //===========================================================================
 
-// Check if a path exists
+// Ensures that the replica object is a singleton, otherwise we would end up trying to
+// create multiple databases on the same path, which will fail because badger locks the
+// directory at the os level. Any test that requires a new replica should either use
+// this function or use a different database path.
+func makeReplica(t *testing.T) *Replica {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if replica == nil {
+		var err error
+		replica, err = New(nil)
+		require.NoError(t, err)
+	}
+
+	return replica
+}
+
+// Check if a path exists, returns an error if permission denied or other OS error.
 func pathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -52,12 +74,14 @@ func pathExists(path string) (bool, error) {
 	return true, nil
 }
 
+// Use require to check that a path exists (asserts no OS error)
 func requirePathExists(t *testing.T, path string) {
 	exists, err := pathExists(path)
 	require.NoError(t, err)
 	require.True(t, exists)
 }
 
+// Use require to ensure that a path does not exist (asserts no OS error)
 func requirePathNotExists(t *testing.T, path string) {
 	exists, err := pathExists(path)
 	require.NoError(t, err)
@@ -68,19 +92,22 @@ func requirePathNotExists(t *testing.T, path string) {
 // Rossby Tests
 //===========================================================================
 
-func TestReplicaService(t *testing.T) {
+func TestReplicaInitialization(t *testing.T) {
 	// Test preconditions
-	dbpath, ok := os.LookupEnv("ROSSBY_DATABASE")
-	require.True(t, ok)
-	requirePathNotExists(t, dbpath)
+	opts := &Config{}
+	require.NoError(t, opts.Load())
+
+	// NOTE: must use new database path to prevent conflicts with other tests.
+	opts.Database = filepath.Join(testDir, "altdb")
+	requirePathNotExists(t, opts.Database)
 
 	// Test correct instantiation of the replica
-	replica, err := New(nil)
+	replica, err := New(opts)
 	require.NoError(t, err)
 	require.Implements(t, (*pb.RossbyServer)(nil), replica)
 	require.NotEmpty(t, replica)
 
 	// Test correct initialization of the replica
 	require.Equal(t, LogLevel(), "caution")
-	requirePathExists(t, dbpath)
+	requirePathExists(t, opts.Database)
 }
