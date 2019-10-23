@@ -12,7 +12,19 @@ import (
 // Test Server RPC Calls
 //===========================================================================
 
-func TestRegister(t *testing.T) {}
+func TestRegister(t *testing.T) {
+	req := &pb.RegisterRequest{
+		Contacts: []*pb.Contact{
+			{Type: pb.ContactType_EMAIL, Contact: "squirrel@example.com"},
+			{Type: pb.ContactType_PHONE, Contact: "+14155552671"},
+		},
+	}
+
+	r := makeReplica(t)
+	rep, err := r.Register(context.Background(), req)
+	require.NoError(t, err)
+	require.False(t, rep.Success)
+}
 
 func TestAuthorize(t *testing.T) {
 	req := &pb.AuthorizeRequest{

@@ -2,13 +2,25 @@ package rossby
 
 import (
 	"context"
+	"fmt"
 
 	pb "github.com/kansaslabs/rossby/pb"
 )
 
 // Register implements the Rossby server interface.
 func (r *Replica) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.RegisterReply, error) {
-	return nil, nil
+	boxid, err := r.boxFromContacts(in.Contacts)
+	if err != nil {
+		fmt.Println(err)
+		return &pb.RegisterReply{Success: false}, nil
+	}
+
+	if boxid == NilBox {
+		return &pb.RegisterReply{Success: false}, nil
+	}
+	fmt.Println(boxid.String())
+
+	return &pb.RegisterReply{Success: true}, nil
 }
 
 // Authorize implements the Rossby server interface.
