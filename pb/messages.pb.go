@@ -22,6 +22,7 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 // Status messages send generic meta information about the state of the inbox.
+// TODO: determine how best to structure status messages
 type Status struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

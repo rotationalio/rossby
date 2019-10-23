@@ -4,6 +4,7 @@ package pb;
 import "google/protobuf/timestamp.proto";
 
 // Status messages send generic meta information about the state of the inbox.
+// TODO: determine how best to structure status messages
 message Status {}
 
 // Message objects represent a single, encrypted message sent from one inbox to another.

@@ -1,0 +1,36 @@
+syntax = "proto3";
+package pb;
+
+import "contacts.proto";
+import "google/protobuf/timestamp.proto";
+
+
+// Profile objects store information about the state of a single inbox (e.g. user) and
+// is the primary data object that is read and written to in most API calls. Although
+// the profile is not generally sent over the network, it is serialized using protocol
+// buffers to store in the database.
+message Profile {
+    string id = 1;                   // the GUID box id for the user
+    repeated Contact contacts = 2;   // the unqiue contact ids for the inbox (phone, email, etc.)
+    repeated Device devices = 3;     // the registered devices and their cursors
+
+    google.protobuf.Timestamp joined = 14;    // when the profile was first created
+    google.protobuf.Timestamp last_seen = 15; // the last time any operation was performed by any device
+
+}
+
+// Users can send and receive messages from multiple devices (e.g. their phone or their
+// laptop). Devices are authorized to send and receive messages by the application and
+// per-device tokens are the primary form of authentication. Devices can also be
+// "deauthorized" so that they can no longer send or receive messages on behalf of a
+// user, but without canceling that user's entire account.
+message Device {
+    string id = 1;              // a unique identifier for the device such as IMEI, ESN, GUID
+    bool authorized = 2;        // if the device has been authorized to send and receive messages
+    uint64 cursor = 3;          // the location in the messages queue the device is at
+    string token = 4;           // the authentication token shared with the device
+
+    google.protobuf.Timestamp created = 13;    // when the device was created by registration/linking
+    google.protobuf.Timestamp last_auth = 14;  // the last time the device was authorized (token update)
+    google.protobuf.Timestamp last_sync = 15;  // the last time the device fetched messages (cursor update)
+}
